@@ -39,6 +39,12 @@
             background-color: #00ff00;
             margin-bottom: 20px;
         }
+        #controls {
+            font-size: 18px;
+            color: white;
+            margin-top: 20px;
+            text-align: left;
+        }
         #score {
             position: absolute;
             top: 10px;
@@ -70,6 +76,14 @@
     <div id="startScreen">
         <h1>OBSTACLE ROLL</h1>
         <button id="startGame" onclick="startGame()">Start Game</button>
+        <div id="controls">
+            <h2>Controls:</h2>
+            <p><strong>Desktop:</strong> Use <strong>A</strong> and <strong>D</strong> or the <strong>Arrow Keys</strong> to move left and right.</p>
+            <p><strong>Mobile:</strong> Tap left or right side of the screen to move.</p>
+            <h2>Rules:</h2>
+            <p>1. Roll the ball along the path and avoid fire obstacles.</p>
+            <p>2. Collect golden circles for immunity.</p>
+        </div>
     </div>
     <div id="gameOverScreen">
         <h1>Game Over</h1>
@@ -77,7 +91,7 @@
         <button onclick="restartGame()">Play Again</button>
     </div>
     <div id="score">Score: 0 | Record: 0</div>
-    <div id="immunityTime"></div> <!-- Display immunity time here -->
+    <div id="immunityTime"></div>
     <div id="countdown">3</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="game.js"></script>
