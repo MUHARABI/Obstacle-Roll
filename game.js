@@ -9,12 +9,18 @@ let touchStartX, touchStartY;
 const swipeSensitivity = 0.5; // Sensitivity for swipe detection
 const moveSpeed = 1; // Increased speed for faster movement
 const glideSpeed = 0.1; // Increased glide speed for quicker response
+let ballSpeed = 0.1; // Initial speed
+const speedIncrement = 0.0001;
+let boulders = [];
+let boulderSpawnIntervalId;
 
 let targetPosition = { x: 0, z: 0 }; // Target position for gliding
 let obstacleSpawnTimeout;
-let immunityRingInterval = 10000; // Interval for spawning immunity rings
-let immunityRingTimer = 20000; // Timer for immunity ring respawn
+let immunityRingInterval = 15000; // Interval for spawning immunity rings
+let immunityRingTimer = 25000; // Timer for immunity ring respawn
 let immunityRingSpawnIntervalId, immunityRingRespawnTimeoutId;
+
+const backgroundMusic = document.getElementById('backgroundMusic');
 
 function init() {
     scene = new THREE.Scene();
@@ -37,6 +43,8 @@ function init() {
     createPath();
     startImmunityRingSpawning();
 
+    startBoulderSpawning();
+
     window.addEventListener('keydown', handleControls);
     window.addEventListener('touchstart', handleTouchStart);
     window.addEventListener('touchend', handleTouchEnd);
@@ -52,7 +60,7 @@ function createPath() {
     pathMesh.position.y = 0;
     scene.add(pathMesh);
 
-    const borderMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+    const borderMaterial = new THREE.MeshBasicMaterial({ color: 0xD3D3D3 });
 
     // Left border
     const leftBorderGeometry = new THREE.BoxGeometry(0.1, 1, pathLength);
@@ -101,6 +109,22 @@ function startImmunityRingSpawning() {
     }, immunityRingInterval);
 }
 
+function startBoulderSpawning() {
+    boulderSpawnIntervalId = setInterval(() => {
+        if (!isGameOver && gameStarted) {
+            createBoulder();
+        }
+    }, 30000); // Spawn boulder every 30 seconds
+}
+function createBoulder() {
+    const boulderGeometry = new THREE.SphereGeometry(obstacleSize * 2, 32, 32);
+    const boulderMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+    const boulder = new THREE.Mesh(boulderGeometry, boulderMaterial);
+
+    boulder.position.set(Math.random() * pathWidth - pathWidth / 2, obstacleSize+(obstacleSize/2), -pathLength / 2);
+    scene.add(boulder);
+    boulders.push(boulder);
+}
 function createGoldenCircle() {
     const geometry = new THREE.TorusGeometry(goldenCircleRadius, goldenCircleRadius * 0.1, 16, 100);
     const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
@@ -158,11 +182,12 @@ function startGame() {
     setTimeout(() => {
         obstacleSpawnTimeout = setInterval(createObstacle, 1000); // Create obstacles every second
     }, 3000);
-
+    backgroundMusic.play();
     // Reset immunity ring spawning
     clearInterval(immunityRingSpawnIntervalId);
     startImmunityRingSpawning();
-
+    clearInterval(boulderSpawnIntervalId); // Clear any existing interval
+    startBoulderSpawning();
     updateScore();
     updateImmunityTime(); // Initialize immunity time display
     animate();
@@ -176,6 +201,11 @@ function restartGame() {
     clearInterval(immunityRingSpawnIntervalId); // Stop existing immunity ring spawning
     goldenCircles.forEach(circle => scene.remove(circle));
     goldenCircles = [];
+    clearInterval(boulderSpawnIntervalId); // Stop boulder spawning
+    boulders.forEach(boulder => scene.remove(boulder));
+    boulders = [];
+    backgroundMusic.pause(); 
+    backgroundMusic.currentTime = 0;
     startGame();
 }
 
@@ -208,7 +238,7 @@ function animate() {
 
     // Move obstacles and golden circles
     obstacles.forEach(obstacle => {
-        obstacle.position.z += 0.1;
+        obstacle.position.z += ballSpeed; // Increase movement speed based on ball speed
         if (obstacle.position.z > pathLength / 2) {
             obstacle.position.z = -pathLength / 2;
             obstacle.position.x = Math.random() * pathWidth - pathWidth / 2;
@@ -216,10 +246,18 @@ function animate() {
     });
 
     goldenCircles.forEach(circle => {
-        circle.position.z += 0.1;
+        circle.position.z += ballSpeed; // Increase movement speed based on ball speed
         if (circle.position.z > pathLength / 2) {
             circle.position.z = -pathLength / 2;
             circle.position.x = Math.random() * pathWidth - pathWidth / 2;
+        }
+    });
+
+    boulders.forEach(boulder => {
+        boulder.position.z += ballSpeed * 2; // Boulders move faster than regular obstacles
+        if (boulder.position.z > pathLength / 2) {
+            scene.remove(boulder);
+            boulders = boulders.filter(b => b !== boulder);
         }
     });
 
@@ -228,7 +266,13 @@ function animate() {
     updateScore();
     updateImmunityTime(); // Update immunity time display
 
+    // Update camera position to follow the ball
+    camera.position.x = ball.position.x;
+
     renderer.render(scene, camera);
+
+    // Gradually increase ball speed over time
+    ballSpeed += speedIncrement/2;
 }
 
 function checkCollisions() {
@@ -254,7 +298,15 @@ function checkCollisions() {
             immunityEndTime = Date.now() + 10000; // Set immunity time to 10 seconds
         }
     });
+
+    boulders.forEach(boulder => {
+        const boulderBox = new THREE.Box3().setFromObject(boulder);
+        if (ballBox.intersectsBox(boulderBox)) {
+            endGame();
+        }
+    });
 }
+
 
 function endGame() {
     isGameOver = true;
@@ -264,6 +316,6 @@ function endGame() {
     document.getElementById('gameOverScreen').style.display = 'block';
     clearInterval(obstacleSpawnTimeout); // Stop obstacle spawning
     clearInterval(immunityRingSpawnIntervalId); // Stop immunity ring spawning
+    clearInterval(boulderSpawnIntervalId); // Stop boulder spawning
 }
-
 init();
