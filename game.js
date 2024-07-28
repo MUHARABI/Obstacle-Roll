@@ -46,7 +46,7 @@ function init() {
 
 function createPath() {
     const pathGeometry = new THREE.PlaneGeometry(pathWidth, pathLength, 1, 1);
-    const pathMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
+    const pathMaterial = new THREE.MeshBasicMaterial({ color: 0xC2B280, side: THREE.DoubleSide }); // Sand color
     const pathMesh = new THREE.Mesh(pathGeometry, pathMaterial);
     pathMesh.rotation.x = -Math.PI / 2;
     pathMesh.position.y = 0;
@@ -67,6 +67,7 @@ function createPath() {
     scene.add(rightBorder);
 }
 
+
 function createObstacles() {
     for (let i = 0; i < 10; i++) {
         createObstacle();
@@ -77,10 +78,20 @@ function createObstacle() {
     const geometry = new THREE.BoxGeometry(obstacleSize, obstacleSize, obstacleSize);
     const material = new THREE.MeshBasicMaterial({ color: 0xffa500 });
     const obstacle = new THREE.Mesh(geometry, material);
-    obstacle.position.set(Math.random() * 10 - 5, obstacleSize / 2, -Math.random() * pathLength);
+
+    let spawnPosition;
+    do {
+        spawnPosition = {
+            x: Math.random() * pathWidth - pathWidth / 2,
+            z: -Math.random() * pathLength
+        };
+    } while (Math.abs(spawnPosition.z) < 10); // Ensure the obstacle spawns at least 10 units away from the player
+
+    obstacle.position.set(spawnPosition.x, obstacleSize / 2, spawnPosition.z);
     scene.add(obstacle);
     obstacles.push(obstacle);
 }
+
 
 function startImmunityRingSpawning() {
     immunityRingSpawnIntervalId = setInterval(() => {
