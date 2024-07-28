@@ -6,25 +6,30 @@
     <title>Obstacle Course Game</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            font-family: 'Press Start 2P', cursive; 
+        body {
+            margin: 0;
+            overflow: auto; /* Allow scrolling */
+            font-family: 'Press Start 2P', cursive;
+            background-color: black; /* Set black background */
+            color: white;
         }
-        #gameCanvas { 
-            display: block; 
+        #gameCanvas {
+            display: block;
         }
         #startScreen, #gameOverScreen {
-            position: absolute; 
-            top: 50%; 
-            left: 50%; 
+            position: absolute;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
             display: none;
-            background-color: black; /* Set background color to black */
-            color: white; /* Ensure text color is white */
-            padding: 20px; /* Add some padding for better spacing */
-            border-radius: 10px; /* Optional: round the corners */
+            background-color: black;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90vw; /* Adjust to fit within viewport width */
+            max-width: 500px; /* Set a maximum width */
+            overflow: auto; /* Allow scrolling within the screen */
         }
         #startScreen h1 {
             font-size: 50px;
