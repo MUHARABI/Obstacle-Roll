@@ -82,6 +82,7 @@
     </style>
 </head>
 <body>
+    <audio id="backgroundMusic" src="audio.mp3" loop></audio>
     <div id="startScreen">
         <h1>OBSTACLE ROLL</h1>
         <button id="startGame" onclick="startGame()">Start Game</button>
@@ -91,7 +92,8 @@
             <p><strong>Mobile:</strong> Tap left or right side of the screen to move.</p>
             <h2>Rules:</h2>
             <p>1. Roll the ball along the path and avoid fire obstacles.</p>
-            <p>2. Collect golden circles for immunity.</p>
+            <p>2. Collect golden circles for immunity from fire obstacles.</p>
+            <p>3. Avoid Boulders</p>
         </div>
     </div>
     <div id="gameOverScreen">
@@ -105,4 +107,4 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="game.js"></script>
 </body>
-</html>
+</html> 
