@@ -18,7 +18,7 @@
             width: 100vw; /* Make the canvas take full viewport width */
             height: 100vh; /* Make the canvas take full viewport height */
         }
-        #startScreen, #gameOverScreen {
+        #startScreen, #gameOverScreen, #rulesScreen {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -33,23 +33,22 @@
             max-width: 500px; /* Set a maximum width */
             overflow: auto; /* Allow scrolling within the screen */
         }
-        #startScreen h1 {
+        #startScreen h1, #rulesScreen h1 {
             font-size: 35px; /* Smaller font size */
             color: red;
-            
             margin-top: 15px;
         }
-        #startScreen button, #gameOverScreen button {
+        #startScreen button, #gameOverScreen button, #rulesScreen button {
             font-size: 20px; /* Smaller font size */
             padding: 10px 20px;
             cursor: pointer;
             border: none;
-            color: white;
+            color: rgb(19, 17, 17);
             background-color: #357f94;
         }
         #startScreen button#startGame {
-            background-color: #00ff00;
-            margin-bottom: 20px;
+            background-color: #d9d671;
+            margin-top: 20px; /* Space above the button */
         }
         #controls {
             font-size: 12px; /* Smaller font size */
@@ -85,10 +84,10 @@
         
         /* Media queries for responsiveness */
         @media (max-width: 600px) {
-            #startScreen h1 {
+            #startScreen h1, #rulesScreen h1 {
                 font-size: 24px; /* Smaller font size */
             }
-            #startScreen button, #gameOverScreen button {
+            #startScreen button, #gameOverScreen button, #rulesScreen button {
                 font-size: 12px; /* Smaller font size */
                 padding: 8px 16px;
             }
@@ -98,10 +97,10 @@
         }
 
         @media (max-width: 400px) {
-            #startScreen h1 {
+            #startScreen h1, #rulesScreen h1 {
                 font-size: 18px; /* Smaller font size */
             }
-            #startScreen button, #gameOverScreen button {
+            #startScreen button, #gameOverScreen button, #rulesScreen button {
                 font-size: 10px; /* Smaller font size */
                 padding: 6px 12px;
             }
@@ -116,7 +115,12 @@
     <audio id="ringSound" src="ring.mp3"></audio>
     <div id="startScreen">
         <h1>OBSTACLE ROLL</h1>
+        
         <button id="startGame" onclick="startGame()">Start Game</button>
+        <button id="rulesButton" onclick="showRules()">Rules</button>
+    </div>
+    <div id="rulesScreen">
+        <h1>Game Rules</h1>
         <div id="controls">
             <h2>Controls:</h2>
             <p><strong>Desktop:</strong> Use <strong>A</strong> and <strong>D</strong> or the <strong>Arrow Keys</strong> to move left and right.</p>
@@ -126,6 +130,7 @@
             <p>2. Collect golden circles for immunity from fire obstacles.</p>
             <p>3. Avoid Boulders</p>
         </div>
+        <button onclick="hideRules()">Back</button>
     </div>
     <div id="gameOverScreen">
         <h1>Game Over</h1>
