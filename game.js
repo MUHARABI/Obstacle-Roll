@@ -9,7 +9,7 @@ let touchStartX, touchStartY;
 const swipeSensitivity = 0.5; // Sensitivity for swipe detection
 const moveSpeed = 1; // Increased speed for faster movement
 const glideSpeed = 0.1; // Increased glide speed for quicker response
-let ballSpeed = 0.5; // Initial speed
+let ballSpeed = 0.1; // Initial speed
 const speedIncrement = 0.0001;
 let boulders = [];
 let boulderSpawnIntervalId;
