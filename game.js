@@ -223,17 +223,20 @@ function updateImmunityTime() {
 }
 
 let lastTime = 0;
+const baseSpeed = 0.1; // Adjust this base speed as necessary
+
 function animate() {
     if (!gameStarted) return;
     if (isGameOver) return;
+
+    requestAnimationFrame(animate);
 
     const now = Date.now();
     const delta = now - lastTime;
     lastTime = now;
     const fps = 1000 / delta;
-    console.log(`FPS: ${fps}`);
 
-    requestAnimationFrame(animate);
+    const adjustedSpeed = baseSpeed * (fps / 60); // Adjust speed based on frame rate
 
     // Smoothly interpolate ball position towards the target position
     ball.position.x += (targetPosition.x - ball.position.x) * glideSpeed;
@@ -245,7 +248,7 @@ function animate() {
 
     // Move obstacles and golden circles
     obstacles.forEach(obstacle => {
-        obstacle.position.z += ballSpeed; // Increase movement speed based on ball speed
+        obstacle.position.z += adjustedSpeed; // Increase movement speed based on adjusted speed
         if (obstacle.position.z > pathLength / 2) {
             obstacle.position.z = -pathLength / 2;
             obstacle.position.x = Math.random() * pathWidth - pathWidth / 2;
@@ -253,7 +256,7 @@ function animate() {
     });
 
     goldenCircles.forEach(circle => {
-        circle.position.z += ballSpeed; // Increase movement speed based on ball speed
+        circle.position.z += adjustedSpeed; // Increase movement speed based on adjusted speed
         if (circle.position.z > pathLength / 2) {
             circle.position.z = -pathLength / 2;
             circle.position.x = Math.random() * pathWidth - pathWidth / 2;
@@ -261,7 +264,7 @@ function animate() {
     });
 
     boulders.forEach(boulder => {
-        boulder.position.z += ballSpeed * 2; // Boulders move faster than regular obstacles
+        boulder.position.z += adjustedSpeed * 2; // Boulders move faster than regular obstacles
         if (boulder.position.z > pathLength / 2) {
             scene.remove(boulder);
             boulders = boulders.filter(b => b !== boulder);
@@ -281,7 +284,6 @@ function animate() {
     // Gradually increase ball speed over time
     ballSpeed += speedIncrement/2;
 }
-
 
 function checkCollisions() {
     const ballBox = new THREE.Box3().setFromObject(ball);
