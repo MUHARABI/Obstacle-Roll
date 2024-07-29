@@ -42,7 +42,6 @@ function init() {
 
     createPath();
     startImmunityRingSpawning();
-
     startBoulderSpawning();
 
     window.addEventListener('keydown', handleControls);
@@ -50,6 +49,15 @@ function init() {
     window.addEventListener('touchend', handleTouchEnd);
 
     document.getElementById('startScreen').style.display = 'block';
+
+    // Ensure the renderer updates its size on window resize
+    window.addEventListener('resize', () => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        renderer.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+    });
 }
 
 function createPath() {
