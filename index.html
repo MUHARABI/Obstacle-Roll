@@ -79,6 +79,33 @@
             transform: translate(-50%, -50%);
             display: none;
         }
+        
+        /* Media queries for responsiveness */
+        @media (max-width: 600px) {
+            #startScreen h1 {
+                font-size: 30px;
+            }
+            #startScreen button, #gameOverScreen button {
+                font-size: 16px;
+                padding: 8px 16px;
+            }
+            #controls {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            #startScreen h1 {
+                font-size: 24px;
+            }
+            #startScreen button, #gameOverScreen button {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+            #controls {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -107,4 +134,4 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="game.js"></script>
 </body>
-</html> 
+</html>
