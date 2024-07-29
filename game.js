@@ -23,7 +23,9 @@ let immunityRingSpawnIntervalId, immunityRingRespawnTimeoutId;
 const backgroundMusic = document.getElementById('backgroundMusic');
 const ringSound = document.getElementById('ringSound');
 
+
 function init() {
+    
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 5;
@@ -175,6 +177,8 @@ function handleTouchEnd(event) {
 
 function startGame() {
     document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('rulesScreen').style.display = 'none'; // Hide rules screen if visible
+
     document.getElementById('gameOverScreen').style.display = 'none';
     isGameOver = false;
     gameStarted = true;
@@ -216,6 +220,15 @@ function restartGame() {
     backgroundMusic.pause(); 
     backgroundMusic.currentTime = 0;
     startGame();
+}
+function showRules() {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('rulesScreen').style.display = 'block';
+}
+
+function hideRules() {
+    document.getElementById('rulesScreen').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'block';
 }
 
 function updateScore() {
@@ -328,4 +341,6 @@ function endGame() {
     clearInterval(immunityRingSpawnIntervalId); // Stop immunity ring spawning
     clearInterval(boulderSpawnIntervalId); // Stop boulder spawning
 }
+
+
 init();
