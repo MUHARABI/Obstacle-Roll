@@ -21,6 +21,7 @@ let immunityRingTimer = 25000; // Timer for immunity ring respawn
 let immunityRingSpawnIntervalId, immunityRingRespawnTimeoutId;
 
 const backgroundMusic = document.getElementById('backgroundMusic');
+const ringSound = document.getElementById('ringSound');
 
 function init() {
     scene = new THREE.Scene();
@@ -301,6 +302,7 @@ function checkCollisions() {
     goldenCircles.forEach(circle => {
         const circleBox = new THREE.Box3().setFromObject(circle);
         if (ballBox.intersectsBox(circleBox)) {
+            ringSound.play();
             scene.remove(circle);
             goldenCircles = goldenCircles.filter(c => c !== circle);
             immunityEndTime = Date.now() + 10000; // Set immunity time to 10 seconds
