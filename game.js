@@ -222,9 +222,16 @@ function updateImmunityTime() {
     }
 }
 
+let lastTime = 0;
 function animate() {
     if (!gameStarted) return;
     if (isGameOver) return;
+
+    const now = Date.now();
+    const delta = now - lastTime;
+    lastTime = now;
+    const fps = 1000 / delta;
+    console.log(`FPS: ${fps}`);
 
     requestAnimationFrame(animate);
 
@@ -274,6 +281,7 @@ function animate() {
     // Gradually increase ball speed over time
     ballSpeed += speedIncrement/2;
 }
+
 
 function checkCollisions() {
     const ballBox = new THREE.Box3().setFromObject(ball);
