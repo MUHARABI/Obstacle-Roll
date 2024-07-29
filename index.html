@@ -8,13 +8,15 @@
     <style>
         body {
             margin: 0;
-            overflow: auto; /* Allow scrolling */
+            overflow: hidden; /* Prevent scrolling */
             font-family: 'Press Start 2P', cursive;
             background-color: black; /* Set black background */
             color: white;
         }
         #gameCanvas {
             display: block;
+            width: 100vw; /* Make the canvas take full viewport width */
+            height: 100vh; /* Make the canvas take full viewport height */
         }
         #startScreen, #gameOverScreen {
             position: absolute;
@@ -32,12 +34,12 @@
             overflow: auto; /* Allow scrolling within the screen */
         }
         #startScreen h1 {
-            font-size: 50px;
+            font-size: 30px; /* Smaller font size */
             color: red;
             margin-bottom: 20px;
         }
         #startScreen button, #gameOverScreen button {
-            font-size: 20px;
+            font-size: 14px; /* Smaller font size */
             padding: 10px 20px;
             cursor: pointer;
             border: none;
@@ -49,7 +51,7 @@
             margin-bottom: 20px;
         }
         #controls {
-            font-size: 18px;
+            font-size: 12px; /* Smaller font size */
             color: white;
             margin-top: 20px;
             text-align: left;
@@ -58,7 +60,7 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            font-size: 20px;
+            font-size: 16px; /* Smaller font size */
             color: white;
             font-family: Arial, sans-serif;
         }
@@ -66,7 +68,7 @@
             position: absolute;
             top: 40px;
             left: 10px;
-            font-size: 20px;
+            font-size: 16px; /* Smaller font size */
             color: white;
             font-family: Arial, sans-serif;
         }
@@ -74,7 +76,7 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            font-size: 40px;
+            font-size: 30px; /* Smaller font size */
             color: red;
             transform: translate(-50%, -50%);
             display: none;
@@ -83,27 +85,27 @@
         /* Media queries for responsiveness */
         @media (max-width: 600px) {
             #startScreen h1 {
-                font-size: 30px;
+                font-size: 24px; /* Smaller font size */
             }
             #startScreen button, #gameOverScreen button {
-                font-size: 16px;
+                font-size: 12px; /* Smaller font size */
                 padding: 8px 16px;
             }
             #controls {
-                font-size: 14px;
+                font-size: 10px; /* Smaller font size */
             }
         }
 
         @media (max-width: 400px) {
             #startScreen h1 {
-                font-size: 24px;
+                font-size: 18px; /* Smaller font size */
             }
             #startScreen button, #gameOverScreen button {
-                font-size: 14px;
+                font-size: 10px; /* Smaller font size */
                 padding: 6px 12px;
             }
             #controls {
-                font-size: 12px;
+                font-size: 8px; /* Smaller font size */
             }
         }
     </style>
