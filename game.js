@@ -13,6 +13,10 @@ let ballSpeed = 0.1; // Initial speed
 const speedIncrement = 0.0001;
 let boulders = [];
 let boulderSpawnIntervalId;
+let blinkStartTime = 0;
+const blinkDuration = 3000; // 3 seconds
+const blinkInterval = 250; // Interval between color changes
+let blinkTimeoutId;
 
 let targetPosition = { x: 0, z: 0 }; // Target position for gliding
 let obstacleSpawnTimeout;
@@ -23,9 +27,33 @@ let immunityRingSpawnIntervalId, immunityRingRespawnTimeoutId;
 const backgroundMusic = document.getElementById('backgroundMusic');
 const ringSound = document.getElementById('ringSound');
 
+let gameSpeed = 'medium'; // Default speed setting
+
+function showSettings() {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('gameOverScreen').style.display = 'none';
+    document.getElementById('settingsScreen').style.display = 'block';
+
+    // Highlight the selected speed button
+    document.getElementById('slowButton').classList.toggle('selected', gameSpeed === 'slow');
+    document.getElementById('mediumButton').classList.toggle('selected', gameSpeed === 'medium');
+    document.getElementById('fastButton').classList.toggle('selected', gameSpeed === 'fast');
+}
+function selectSpeed(speed) {
+    gameSpeed = speed;
+    localStorage.setItem('gameSpeed', speed); // Save to localStorage
+    showSettings(); // Stay on settings screen to confirm selection
+}
+
+function backToMenu() {
+    document.getElementById('settingsScreen').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'block';
+}
+
 
 function init() {
-    
+    const savedSpeed = localStorage.getItem('gameSpeed');
+    if (savedSpeed) gameSpeed = savedSpeed;
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 5;
@@ -195,7 +223,17 @@ function startGame() {
     setTimeout(() => {
         obstacleSpawnTimeout = setInterval(createObstacle, 1000); // Create obstacles every second
     }, 3000);
-    backgroundMusic.play();
+    backgroundMusic.pause(); // Pause music
+    backgroundMusic.currentTime = 0; // Reset music to start
+    backgroundMusic.play(); // S
+    
+    // Apply selected speed setting
+    switch (gameSpeed) {
+        case 'slow': ballSpeed = 0.1; break;
+        case 'medium': ballSpeed = 0.2; break;
+        case 'fast': ballSpeed = 0.3; break;
+    }
+
     // Reset immunity ring spawning
     clearInterval(immunityRingSpawnIntervalId);
     startImmunityRingSpawning();
@@ -219,8 +257,18 @@ function restartGame() {
     boulders = [];
     backgroundMusic.pause(); 
     backgroundMusic.currentTime = 0;
+    
+    // Reset game variables
+    score = 0;
+    ballSpeed = 0.1; // Reset ball speed to initial value
+    immunityEndTime = 0;
+    isGameOver = false;
+    gameStarted = false;
+    
+    // Restart the game
     startGame();
 }
+
 function showRules() {
     document.getElementById('startScreen').style.display = 'none';
     document.getElementById('rulesScreen').style.display = 'block';
@@ -287,6 +335,7 @@ function animate() {
     score += 0.1;
     updateScore();
     updateImmunityTime(); // Update immunity time display
+    updateBallColor(); // Update ball color based on immunity status
 
     // Update camera position to follow the ball
     camera.position.x = ball.position.x;
@@ -295,6 +344,39 @@ function animate() {
 
     // Gradually increase ball speed over time
     ballSpeed += speedIncrement/2;
+}
+
+
+function updateBallColor() {
+    if (Date.now() < immunityEndTime) {
+        const remainingTime = immunityEndTime - Date.now();
+        if (remainingTime <= blinkDuration) {
+            // Blinking effect
+            if (!blinkTimeoutId) {
+                blinkStartTime = Date.now();
+                blinkTimeoutId = setInterval(() => {
+                    const elapsedTime = Date.now() - blinkStartTime;
+                    if (elapsedTime >= blinkDuration) {
+                        clearInterval(blinkTimeoutId);
+                        blinkTimeoutId = null;
+                        ball.material.color.set('#ff0000'); // Set to light green after blinking ends
+                    } else {
+                        // Toggle between light green and red
+                        const isGreen = Math.floor(elapsedTime / blinkInterval) % 2 === 0;
+                        ball.material.color.set(isGreen ? '#08ef2b' : '#ff0000'); // Light green and red
+                    }
+                }, blinkInterval);
+            }
+        } else {
+            ball.material.color.set('#08ef2b'); // Set to light green if not blinking
+        }
+    } else {
+        ball.material.color.set('#ff0000'); // Reset ball color
+        if (blinkTimeoutId) {
+            clearInterval(blinkTimeoutId);
+            blinkTimeoutId = null;
+        }
+    }
 }
 
 function checkCollisions() {
@@ -328,7 +410,16 @@ function checkCollisions() {
             endGame();
         }
     });
+
+    updateBallColor(); // Update ball color based on immunity status
 }
+
+function showMenu() {
+    document.getElementById('gameOverScreen').style.display = 'none';
+    document.getElementById('rulesScreen').style.display = 'none'; // Hide rules screen if visible
+    document.getElementById('startScreen').style.display = 'block'; // Show the main menu
+}
+
 
 
 function endGame() {
