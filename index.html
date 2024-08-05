@@ -45,9 +45,10 @@
             border: none;
             color: rgb(19, 17, 17);
             background-color: #357f94;
+            border-radius: 10px;
         }
         #startScreen button#startGame {
-            background-color: #d9d671;
+            background-color: #357f94;
             margin-top: 20px; /* Space above the button */
         }
         #controls {
@@ -80,6 +81,51 @@
             color: red;
             transform: translate(-50%, -50%);
             display: none;
+        }
+        #gameOverScreen button {
+            font-size: 20px; /* Ensure font size matches other buttons */
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            color: rgb(19, 17, 17);
+            background-color: #357f94;
+            margin-top: 10px; /* Space between buttons */
+        }
+
+        #gameOverScreen button#menuButton {
+            background-color: #357f94; /* Match the color of other buttons */
+        }
+        #settingsScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none;
+            background-color: black;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90vw; /* Adjust to fit within viewport width */
+            max-width: 500px; /* Set a maximum width */
+            overflow: auto; /* Allow scrolling within the screen */
+        }
+        #settingsScreen h1 {
+            font-size: 35px; /* Font size for the header */
+            color: red;
+            margin-top: 15px;
+        }
+        #settingsScreen button {
+            font-size: 20px; /* Font size for buttons */
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            color: rgb(19, 17, 17);
+            background-color: #357f94;
+            border-radius: 10px;
+        }
+        #settingsScreen button.selected {
+            background-color: #FF4500; /* Highlight color for selected option */
         }
         
         /* Media queries for responsiveness */
@@ -118,6 +164,7 @@
         
         <button id="startGame" onclick="startGame()">Start Game</button>
         <button id="rulesButton" onclick="showRules()">Rules</button>
+        <button id="settingsButton" onclick="showSettings()">Game Settings</button>
     </div>
     <div id="rulesScreen">
         <h1>Game Rules</h1>
@@ -132,10 +179,20 @@
         </div>
         <button onclick="hideRules()">Back</button>
     </div>
+    <div id="settingsScreen">
+        <h1>Game Settings</h1>
+        <button id="slowButton" onclick="selectSpeed('slow')">Slow</button>
+        <button id="mediumButton" onclick="selectSpeed('medium')">Medium</button>
+        <button id="fastButton" onclick="selectSpeed('fast')">Fast</button>
+        <button onclick="backToMenu()">Back to Menu</button>
+    </div>
+
+    
     <div id="gameOverScreen">
         <h1>Game Over</h1>
         <p>Score: <span id="finalScore">0</span></p>
         <button onclick="restartGame()">Play Again</button>
+        <button onclick="showMenu()">Menu</button>
     </div>
     <div id="score">Score: 0 | Record: 0</div>
     <div id="immunityTime"></div>
