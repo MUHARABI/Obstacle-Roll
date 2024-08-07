@@ -26,8 +26,38 @@ let immunityRingSpawnIntervalId, immunityRingRespawnTimeoutId;
 
 const backgroundMusic = document.getElementById('backgroundMusic');
 const ringSound = document.getElementById('ringSound');
-
+const ghostMusic = document.getElementById('GhostMusic');
+const fallingSound = document.getElementById('fallingSound');
 let gameSpeed = 'medium'; // Default speed setting
+let selectedCourse = 'standard'; // Default course
+let holeSpawnIntervalId;
+let holes = [];
+let stars = [];
+
+function showCourseSelection() {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('courseSelectionScreen').style.display = 'block';
+}
+
+function selectCourse(course) {
+    selectedCourse = course;
+    if (course === 'standard') {
+        ghostMusic.pause(); // Stop ghost music if playing
+        ghostMusic.currentTime = 0; // Reset the ghost music
+        backgroundMusic.play(); // Play standard course music
+    } else if (course === 'ghost') {
+        backgroundMusic.pause(); // Stop standard music if playing
+        backgroundMusic.currentTime = 0; // Reset the standard music
+        ghostMusic.play(); // Play ghost course music
+    }
+    document.getElementById('courseSelectionScreen').style.display = 'none';
+    startGame(); // Start the game with the selected course
+}
+
+function backToStart() {
+    document.getElementById('courseSelectionScreen').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'block';
+}
 
 function showSettings() {
     document.getElementById('startScreen').style.display = 'none';
@@ -122,6 +152,8 @@ function createObstacles() {
 }
 
 function createObstacle() {
+    if (selectedCourse === 'ghost') return; // Prevent creation of standard obstacles in ghost course
+
     const geometry = new THREE.BoxGeometry(obstacleSize, obstacleSize, obstacleSize);
     const material = new THREE.MeshBasicMaterial({ color: 0xffa500 });
     const obstacle = new THREE.Mesh(geometry, material);
@@ -139,7 +171,6 @@ function createObstacle() {
     obstacles.push(obstacle);
 }
 
-
 function startImmunityRingSpawning() {
     immunityRingSpawnIntervalId = setInterval(() => {
         if (!isGameOver && gameStarted) {
@@ -149,11 +180,16 @@ function startImmunityRingSpawning() {
 }
 
 function startBoulderSpawning() {
-    boulderSpawnIntervalId = setInterval(() => {
-        if (!isGameOver && gameStarted) {
-            createBoulder();
-        }
-    }, 30000); // Spawn boulder every 30 seconds
+    if (selectedCourse === 'standard') { // Check if the course is standard
+        boulderSpawnIntervalId = setInterval(() => {
+            if (!isGameOver && gameStarted) {
+                createBoulder();
+            }
+        }, 30000); // Spawn boulder every 30 seconds
+    } else {
+        // Clear existing boulder spawn interval if in ghost course
+        clearInterval(boulderSpawnIntervalId);
+    }
 }
 function createBoulder() {
     const boulderGeometry = new THREE.SphereGeometry(obstacleSize * 2, 32, 32);
@@ -201,32 +237,77 @@ function handleTouchEnd(event) {
     if (touchEndX < screenWidth / 2) targetPosition.x -= moveSpeed; // Tap left
     if (touchEndX > screenWidth / 2) targetPosition.x += moveSpeed; // Tap right
 }
+function createHole() {
+    const holeRadius = pathWidth / 4; // Set the hole radius to be smaller
+    const holeGeometry = new THREE.CircleGeometry(holeRadius, 32);
+    const holeMaterial = new THREE.MeshBasicMaterial({ color: 0x000080, side: THREE.DoubleSide }); // Set color to navy blue
+    const hole = new THREE.Mesh(holeGeometry, holeMaterial);
+    hole.rotation.x = -Math.PI / 2;
+    hole.position.set(0, 0.1, -pathLength / 2); // Position the hole slightly higher on the y-axis
+    scene.add(hole);
+    return hole;
+}
 
+
+
+
+
+function startHoleSpawning() {
+    holeSpawnIntervalId = setInterval(() => {
+        if (!isGameOver && gameStarted && selectedCourse === 'ghost') {
+            const hole = createHole();
+            holes.push(hole);
+        }
+    }, 30000); // Spawn a hole every 30 seconds
+}
 
 function startGame() {
-    document.getElementById('startScreen').style.display = 'none';
-    document.getElementById('rulesScreen').style.display = 'none'; // Hide rules screen if visible
-
+    document.getElementById('courseSelectionScreen').style.display = 'none';
+    document.getElementById('rulesScreen').style.display = 'none';
     document.getElementById('gameOverScreen').style.display = 'none';
     isGameOver = false;
     gameStarted = true;
     score = 0;
     immunityEndTime = 0;
+    
+    // Clear existing obstacles, circles, boulders, holes, and stars
     obstacles.forEach(obstacle => scene.remove(obstacle));
     obstacles = [];
-    clearInterval(immunityRingSpawnIntervalId); // Stop existing immunity ring spawning
     goldenCircles.forEach(circle => scene.remove(circle));
     goldenCircles = [];
-    createObstacles(); // Create initial obstacles after delay
+    boulders.forEach(boulder => scene.remove(boulder));
+    boulders = [];
+    holes.forEach(hole => scene.remove(hole));
+    holes = [];
+    removeStars(); // Remove existing stars
 
-    // Delay obstacle creation for 3 seconds
-    setTimeout(() => {
-        obstacleSpawnTimeout = setInterval(createObstacle, 1000); // Create obstacles every second
-    }, 3000);
-    backgroundMusic.pause(); // Pause music
-    backgroundMusic.currentTime = 0; // Reset music to start
-    backgroundMusic.play(); // S
+    if (selectedCourse === 'ghost') {
+        startHoleSpawning(); // Start spawning holes
+        createStars(); // Add stars for ghost course
+    }
     
+    // Restart background music
+    if (selectedCourse === 'standard') {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        backgroundMusic.play();
+        renderer.setClearColor(0x87CEEB, 1); // Set background to blue
+        createObstacles(); // Standard course obstacles
+    } else if (selectedCourse === 'ghost') {
+        ghostMusic.pause();
+        ghostMusic.currentTime = 0;
+        ghostMusic.play();
+        renderer.setClearColor(0x000000, 1); // Set background to black
+        createGhostCourse(); // Create ghost course obstacles
+    }
+
+    // Delay obstacle creation for 3 seconds if not in ghost course
+    if (selectedCourse !== 'ghost') {
+        setTimeout(() => {
+            obstacleSpawnTimeout = setInterval(createObstacle, 1000);
+        }, 3000);
+    }
+
     // Apply selected speed setting
     switch (gameSpeed) {
         case 'slow': ballSpeed = 0.1; break;
@@ -237,26 +318,132 @@ function startGame() {
     // Reset immunity ring spawning
     clearInterval(immunityRingSpawnIntervalId);
     startImmunityRingSpawning();
-    clearInterval(boulderSpawnIntervalId); // Clear any existing interval
+    clearInterval(boulderSpawnIntervalId);
     startBoulderSpawning();
     updateScore();
     updateImmunityTime(); // Initialize immunity time display
+
+    // Ensure the ball is visible at the start
+    ball.visible = true;
+    
     animate();
 }
+
+function createGhostCourse() {
+    // Set background to navy blue
+    renderer.setClearColor(0x000080, 1);
+
+    // Remove existing obstacles and golden circles
+    obstacles.forEach(obstacle => scene.remove(obstacle));
+    obstacles = [];
+    goldenCircles.forEach(circle => scene.remove(circle));
+    goldenCircles = [];
+
+    // Create ghost course obstacles
+    for (let i = 0; i < 10; i++) {
+        createGhostObstacle();
+    }
+
+    // Delay ghost obstacle creation for 3 seconds
+    setTimeout(() => {
+        obstacleSpawnTimeout = setInterval(createGhostObstacle, 2000); // Create ghost obstacles every second
+    }, 5000);
+
+    // Add stars to the background
+    createStars();
+}
+
+function createStars() {
+    const starGeometry = new THREE.SphereGeometry(0.1, 24, 24);
+    const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    for (let i = 0; i < 500; i++) {
+        const star = new THREE.Mesh(starGeometry, starMaterial);
+        star.position.set(
+            (Math.random() - 0.5) * 200,
+            Math.random() * 100,
+            -Math.random() * 300
+        );
+        scene.add(star);
+        stars.push(star);
+    }
+}
+function removeStars() {
+    stars.forEach(star => scene.remove(star));
+    stars = []; // Clear the stars array
+}
+
+
+
+
+function createGhostObstacle() {
+    const geometry = new THREE.SphereGeometry(obstacleSize / 1.5, 32, 32);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+    const obstacle = new THREE.Mesh(geometry, material);
+
+    let spawnPosition;
+    const minDistance = 10; // Minimum distance from the player
+    do {
+        spawnPosition = {
+            x: Math.random() * pathWidth - pathWidth / 2,
+            z: -Math.random() * pathLength
+        };
+    } while (Math.abs(spawnPosition.z) < minDistance); // Ensure the obstacle spawns at least minDistance away from the player
+
+    obstacle.position.set(spawnPosition.x, obstacleSize / 1, spawnPosition.z);
+    
+    // Create eyes for the ghost
+    const eyeGeometry = new THREE.SphereGeometry(0.2, 16, 16); // Larger spheres for eyes
+    const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }); // Dark black color for eyes
+
+    // Left eye
+    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    leftEye.position.set(-0.3, 0.4, 0.6); // Adjust position relative to the obstacle
+
+    // Right eye
+    const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    rightEye.position.set(0.3, 0.4, 0.6); // Adjust position relative to the obstacle
+
+    // Create Mouth
+    const mouthGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+    const mouthMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
+    mouth.position.set(0, -0.4, 0.6);
+
+    // Add eyes and mouth to the obstacle
+    obstacle.add(leftEye);
+    obstacle.add(rightEye);
+    obstacle.add(mouth);
+
+    scene.add(obstacle);
+    obstacles.push(obstacle);
+}
+
+
+
+
 
 function restartGame() {
     document.getElementById('gameOverScreen').style.display = 'none';
     clearInterval(obstacleSpawnTimeout); // Stop obstacle spawning
     obstacles.forEach(obstacle => scene.remove(obstacle));
     obstacles = [];
-    clearInterval(immunityRingSpawnIntervalId); // Stop existing immunity ring spawning
     goldenCircles.forEach(circle => scene.remove(circle));
     goldenCircles = [];
+    clearInterval(immunityRingSpawnIntervalId); // Stop existing immunity ring spawning
     clearInterval(boulderSpawnIntervalId); // Stop boulder spawning
     boulders.forEach(boulder => scene.remove(boulder));
     boulders = [];
-    backgroundMusic.pause(); 
-    backgroundMusic.currentTime = 0;
+    holes.forEach(hole => scene.remove(hole)); // Remove old holes
+    holes = [];
+
+    if (selectedCourse === 'standard') {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    } else if (selectedCourse === 'ghost') {
+        ghostMusic.pause();
+        ghostMusic.currentTime = 0;
+    }
     
     // Reset game variables
     score = 0;
@@ -265,10 +452,12 @@ function restartGame() {
     isGameOver = false;
     gameStarted = false;
     
+    // Ensure the ball is visible
+    ball.visible = true;
+
     // Restart the game
     startGame();
 }
-
 function showRules() {
     document.getElementById('startScreen').style.display = 'none';
     document.getElementById('rulesScreen').style.display = 'block';
@@ -280,7 +469,7 @@ function hideRules() {
 }
 
 function updateScore() {
-    document.getElementById('score').innerText = `Score: ${Math.floor(score)} | Record: ${record}`;
+    document.getElementById('score').innerText = `Score: ${Math.floor(score)} | Record: ${record}`
 }
 
 function updateImmunityTime() {
@@ -293,8 +482,7 @@ function updateImmunityTime() {
 }
 
 function animate() {
-    if (!gameStarted) return;
-    if (isGameOver) return;
+    if (!gameStarted || isGameOver) return;
 
     requestAnimationFrame(animate);
 
@@ -328,6 +516,15 @@ function animate() {
         if (boulder.position.z > pathLength / 2) {
             scene.remove(boulder);
             boulders = boulders.filter(b => b !== boulder);
+        }
+    });
+
+    // Move holes backward
+    holes.forEach(hole => {
+        hole.position.z += ballSpeed; // Move the hole backward
+        if (hole.position.z > pathLength / 2) {
+            scene.remove(hole);
+            holes = holes.filter(h => h !== hole);
         }
     });
 
@@ -379,6 +576,8 @@ function updateBallColor() {
     }
 }
 
+let endGameTimeoutId; // Add this variable to store the timeout ID
+
 function checkCollisions() {
     const ballBox = new THREE.Box3().setFromObject(ball);
 
@@ -411,8 +610,24 @@ function checkCollisions() {
         }
     });
 
+    if (selectedCourse === 'ghost') {
+        holes.forEach(hole => {
+            const holeBox = new THREE.Box3().setFromObject(hole);
+            if (ballBox.intersectsBox(holeBox)) {
+                fallingSound.play();
+                ball.visible = false; // Hide the ball
+                // Set a timeout to delay the end game screen
+                if (endGameTimeoutId) {
+                    clearTimeout(endGameTimeoutId); // Clear any existing timeout
+                }
+                endGameTimeoutId = setTimeout(endGame, 100); // Delay by 1 second
+            }
+        });
+    }
+
     updateBallColor(); // Update ball color based on immunity status
 }
+
 
 function showMenu() {
     document.getElementById('gameOverScreen').style.display = 'none';
@@ -431,6 +646,11 @@ function endGame() {
     clearInterval(obstacleSpawnTimeout); // Stop obstacle spawning
     clearInterval(immunityRingSpawnIntervalId); // Stop immunity ring spawning
     clearInterval(boulderSpawnIntervalId); // Stop boulder spawning
+    // Clear any existing timeout
+    if (endGameTimeoutId) {
+        clearTimeout(endGameTimeoutId);
+        endGameTimeoutId = null;
+    }
 }
 
 
