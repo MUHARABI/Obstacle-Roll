@@ -127,6 +127,44 @@
         #settingsScreen button.selected {
             background-color: #FF4500; /* Highlight color for selected option */
         }
+        #courseSelectionScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none;
+            background-color: black;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90vw;
+            max-width: 500px;
+            overflow: auto;
+        }
+
+        #courseSelectionScreen h1 {
+            font-size: 35px;
+            color: red;
+            margin-top: 15px;
+        }
+
+        #courseSelectionScreen button {
+            font-size: 20px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            color: rgb(19, 17, 17);
+            background-color: #357f94;
+            border-radius: 10px;
+            margin: 10px;
+        }
+
+        #courseSelectionScreen button.selected {
+            background-color: #FF4500;
+        }
+
+        
         
         /* Media queries for responsiveness */
         @media (max-width: 600px) {
@@ -158,11 +196,13 @@
 </head>
 <body>
     <audio id="backgroundMusic" src="audio.mp3" loop></audio>
+    <audio id= "GhostMusic" src="ghost.mp3" loop></audio>
     <audio id="ringSound" src="ring.mp3"></audio>
+    <audio id = "fallingSound" src ="fallingSound.mp3"></audio>
     <div id="startScreen">
         <h1>OBSTACLE ROLL</h1>
         
-        <button id="startGame" onclick="startGame()">Start Game</button>
+        <button id="startGame" onclick="showCourseSelection()">Start Game</button>
         <button id="rulesButton" onclick="showRules()">Rules</button>
         <button id="settingsButton" onclick="showSettings()">Game Settings</button>
     </div>
@@ -186,6 +226,14 @@
         <button id="fastButton" onclick="selectSpeed('fast')">Fast</button>
         <button onclick="backToMenu()">Back to Menu</button>
     </div>
+    <div id="courseSelectionScreen">
+        <h1>Select Course</h1>
+        <button id="standardCourseButton" onclick="selectCourse('standard')">Standard Course</button>
+        <button id="ghostCourseButton" onclick="selectCourse('ghost')">Ghost Course</button>
+        <button onclick="backToStart()">Back to Menu</button>
+    </div>
+    
+    
 
     
     <div id="gameOverScreen">
