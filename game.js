@@ -41,6 +41,30 @@ function showCourseSelection() {
 
 function selectCourse(course) {
     selectedCourse = course;
+
+    // Clear ghost-related intervals and remove existing ghosts
+    if (selectedCourse === 'standard') {
+        clearInterval(holeSpawnIntervalId); // Stop ghost hole spawning
+        holes.forEach(hole => scene.remove(hole)); // Remove existing holes
+        holes = [];
+        clearInterval(obstacleSpawnTimeout); // Stop ghost obstacle spawning
+        obstacles.forEach(obstacle => scene.remove(obstacle)); // Remove existing ghosts
+        obstacles = [];
+    } else if (selectedCourse === 'ghost') {
+        // Clear existing standard course obstacles if switching to ghost course
+        clearInterval(obstacleSpawnTimeout); // Stop standard obstacle spawning
+        obstacles.forEach(obstacle => scene.remove(obstacle));
+        obstacles = [];
+        clearInterval(boulderSpawnIntervalId); // Stop boulder spawning
+        boulders.forEach(boulder => scene.remove(boulder)); // Remove boulders
+        boulders = [];
+        clearInterval(immunityRingSpawnIntervalId); // Stop immunity ring spawning
+        goldenCircles.forEach(circle => scene.remove(circle)); // Remove existing golden circles
+        goldenCircles = [];
+        removeStars(); // Remove existing stars if present
+    }
+
+    // Handle music playback based on selected course
     if (course === 'standard') {
         ghostMusic.pause(); // Stop ghost music if playing
         ghostMusic.currentTime = 0; // Reset the ghost music
@@ -50,9 +74,11 @@ function selectCourse(course) {
         backgroundMusic.currentTime = 0; // Reset the standard music
         ghostMusic.play(); // Play ghost course music
     }
+
     document.getElementById('courseSelectionScreen').style.display = 'none';
     startGame(); // Start the game with the selected course
 }
+
 
 function backToStart() {
     document.getElementById('courseSelectionScreen').style.display = 'none';
@@ -270,7 +296,7 @@ function startGame() {
     score = 0;
     immunityEndTime = 0;
     
-    // Clear existing obstacles, circles, boulders, holes, and stars
+    // Clear existing elements
     obstacles.forEach(obstacle => scene.remove(obstacle));
     obstacles = [];
     goldenCircles.forEach(circle => scene.remove(circle));
@@ -316,6 +342,7 @@ function startGame() {
     }
 
     // Reset immunity ring spawning
+    
     clearInterval(immunityRingSpawnIntervalId);
     startImmunityRingSpawning();
     clearInterval(boulderSpawnIntervalId);
@@ -326,8 +353,10 @@ function startGame() {
     // Ensure the ball is visible at the start
     ball.visible = true;
     
+    
     animate();
 }
+
 
 function createGhostCourse() {
     // Set background to navy blue
@@ -372,7 +401,6 @@ function removeStars() {
     stars.forEach(star => scene.remove(star));
     stars = []; // Clear the stars array
 }
-
 
 
 
@@ -620,7 +648,7 @@ function checkCollisions() {
                 if (endGameTimeoutId) {
                     clearTimeout(endGameTimeoutId); // Clear any existing timeout
                 }
-                endGameTimeoutId = setTimeout(endGame, 50); // Delay by 1 second
+                endGameTimeoutId = setTimeout(endGame, 100); // Delay by 1 second
             }
         });
     }
