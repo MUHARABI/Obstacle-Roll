@@ -620,7 +620,7 @@ function checkCollisions() {
                 if (endGameTimeoutId) {
                     clearTimeout(endGameTimeoutId); // Clear any existing timeout
                 }
-                endGameTimeoutId = setTimeout(endGame, 100); // Delay by 1 second
+                endGameTimeoutId = setTimeout(endGame, 50); // Delay by 1 second
             }
         });
     }
