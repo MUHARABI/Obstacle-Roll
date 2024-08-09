@@ -44,20 +44,23 @@ function selectCourse(course) {
 
     // Clear ghost-related intervals and remove existing ghosts
     if (selectedCourse === 'standard') {
+        removeAllGhostObstacles();
         clearInterval(holeSpawnIntervalId); // Stop ghost hole spawning
         holes.forEach(hole => scene.remove(hole)); // Remove existing holes
         holes = [];
-        clearInterval(obstacleSpawnTimeout); // Stop ghost obstacle spawning
-        obstacles.forEach(obstacle => scene.remove(obstacle)); // Remove existing ghosts
-        obstacles = [];
-    } else if (selectedCourse === 'ghost') {
-        // Clear existing standard course obstacles if switching to ghost course
-        clearInterval(obstacleSpawnTimeout); // Stop standard obstacle spawning
-        obstacles.forEach(obstacle => scene.remove(obstacle));
         obstacles = [];
         clearInterval(boulderSpawnIntervalId); // Stop boulder spawning
         boulders.forEach(boulder => scene.remove(boulder)); // Remove boulders
         boulders = [];
+        createBackgroundMountainsAndVolcanoes();
+         
+    } else if (selectedCourse === 'ghost') {
+        removeBackgroundMountainsAndVolcanoes();
+        clearInterval(obstacleSpawnTimeout); // Stop standard obstacle spawning
+        obstacles.forEach(obstacle => scene.remove(obstacle)); // Remove existing standard obstacles
+        obstacles = [];
+        clearInterval(boulderSpawnIntervalId); // Stop boulder spawning
+        boulders.forEach(boulder => scene.remove(boulder)); // Remove boulders
         clearInterval(immunityRingSpawnIntervalId); // Stop immunity ring spawning
         goldenCircles.forEach(circle => scene.remove(circle)); // Remove existing golden circles
         goldenCircles = [];
@@ -78,6 +81,7 @@ function selectCourse(course) {
     document.getElementById('courseSelectionScreen').style.display = 'none';
     startGame(); // Start the game with the selected course
 }
+
 
 
 function backToStart() {
@@ -146,6 +150,65 @@ function init() {
         camera.updateProjectionMatrix();
     });
 }
+let backgroundGroup; // Declare a variable to hold the reference to the background group
+
+function createBackgroundMountainsAndVolcanoes() {
+    if(selectedCourse === "ghost") return;
+    // Create a group to hold all mountains and volcanoes
+    backgroundGroup = new THREE.Group();
+    backgroundGroup.name = 'backgroundGroup'; // Set a name for easy reference
+
+    // Function to create a trapezoid shape with optional name
+    function createTrapezoid(widthTop, widthBottom, height, color, name = '') {
+        const shape = new THREE.Shape();
+        shape.moveTo(-widthBottom / 2, 0);
+        shape.lineTo(widthBottom / 2, 0);
+        shape.lineTo(widthTop / 2, height);
+        shape.lineTo(-widthTop / 2, height);
+        shape.lineTo(-widthBottom / 2, 0);
+        
+        const geometry = new THREE.ShapeGeometry(shape);
+        const material = new THREE.MeshBasicMaterial({ color });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.name = name; // Set the name for identification
+        return mesh;
+    }
+
+    // Taller mountains
+    const mountain1 = createTrapezoid(180, 600, 800, 0x808080, 'mountain1'); // Added name
+    mountain1.position.set(-500, -500, -400); // Adjusted to maintain proportion
+    backgroundGroup.add(mountain1);
+
+    const mountain2 = createTrapezoid(180, 600, 800, 0x808080, 'mountain2'); // Added name
+    mountain2.position.set(500, -500, -400); // Adjusted to maintain proportion
+    backgroundGroup.add(mountain2);
+
+    // Volcano with adjusted red top
+    const volcano = createTrapezoid(240, 480, 400, 0x808080, 'volcano'); // Added name
+    volcano.position.set(0, -250, -300); // Positioned directly in front of the path
+
+    // Red trapezoid at the top, with ends perfectly aligned with the gray part
+    const redTrapezoid = createTrapezoid(240, 240, 20, 0xFF0000, 'redTrapezoid'); // Added name
+    redTrapezoid.position.set(0, 400, 0.1); // Positioned at the top of the volcano, aligns perfectly
+    volcano.add(redTrapezoid); // Attach the red trapezoid to the volcano
+
+    backgroundGroup.add(volcano);
+
+    // Add the background group to the scene
+    scene.add(backgroundGroup);
+}
+
+function removeBackgroundMountainsAndVolcanoes() {
+    const group = scene.getObjectByName('backgroundGroup');
+    if (group) {
+        scene.remove(group);
+        // Optionally, dispose of all objects in the group
+        group.traverse((object) => {
+            if (object.geometry) object.geometry.dispose();
+            if (object.material) object.material.dispose();
+        });
+    }
+}
 
 function createPath() {
     const pathGeometry = new THREE.PlaneGeometry(pathWidth, pathLength, 1, 1);
@@ -155,7 +218,7 @@ function createPath() {
     pathMesh.position.y = 0;
     scene.add(pathMesh);
 
-    const borderMaterial = new THREE.MeshBasicMaterial({ color: 0xD3D3D3 });
+    const borderMaterial = new THREE.MeshBasicMaterial({ color: 0xF0F5A8 });
 
     // Left border
     const leftBorderGeometry = new THREE.BoxGeometry(0.1, 1, pathLength);
@@ -168,7 +231,11 @@ function createPath() {
     const rightBorder = new THREE.Mesh(rightBorderGeometry, borderMaterial);
     rightBorder.position.set(pathWidth / 2, 0.5, 0);
     scene.add(rightBorder);
+
+
+    
 }
+
 
 
 function createObstacles() {
@@ -219,12 +286,13 @@ function startBoulderSpawning() {
 }
 function createBoulder() {
     const boulderGeometry = new THREE.SphereGeometry(obstacleSize * 2, 32, 32);
-    const boulderMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+    const boulderMaterial = new THREE.MeshBasicMaterial({ color: 0xD3D3D3 });
     const boulder = new THREE.Mesh(boulderGeometry, boulderMaterial);
 
-    boulder.position.set(Math.random() * pathWidth - pathWidth / 2, obstacleSize+(obstacleSize/2), -pathLength / 2);
+    boulder.position.set(Math.random() * pathWidth - pathWidth / 2, obstacleSize+(obstacleSize/2)+0.7, -pathLength / 2);
     scene.add(boulder);
     boulders.push(boulder);
+    
 }
 function createGoldenCircle() {
     const geometry = new THREE.TorusGeometry(goldenCircleRadius, goldenCircleRadius * 0.1, 16, 100);
@@ -271,7 +339,9 @@ function createHole() {
     hole.rotation.x = -Math.PI / 2;
     hole.position.set(0, 0.1, -pathLength / 2); // Position the hole slightly higher on the y-axis
     scene.add(hole);
+    
     return hole;
+    
 }
 
 
@@ -317,7 +387,7 @@ function startGame() {
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
         backgroundMusic.play();
-        renderer.setClearColor(0x87CEEB, 1); // Set background to blue
+        renderer.setClearColor(0xFFC280, 1); // Set background to blue
         createObstacles(); // Standard course obstacles
     } else if (selectedCourse === 'ghost') {
         ghostMusic.pause();
@@ -404,49 +474,75 @@ function removeStars() {
 
 
 
-function createGhostObstacle() {
-    const geometry = new THREE.SphereGeometry(obstacleSize / 1.5, 32, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
-    const obstacle = new THREE.Mesh(geometry, material);
+ // Global array to keep track of all obstacles
 
-    let spawnPosition;
-    const minDistance = 10; // Minimum distance from the player
-    do {
-        spawnPosition = {
-            x: Math.random() * pathWidth - pathWidth / 2,
-            z: -Math.random() * pathLength
-        };
-    } while (Math.abs(spawnPosition.z) < minDistance); // Ensure the obstacle spawns at least minDistance away from the player
+ let canSpawnGhosts = true; // Flag to control ghost spawning
 
-    obstacle.position.set(spawnPosition.x, obstacleSize / 1, spawnPosition.z);
-    
-    // Create eyes for the ghost
-    const eyeGeometry = new THREE.SphereGeometry(0.2, 16, 16); // Larger spheres for eyes
-    const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }); // Dark black color for eyes
-
-    // Left eye
-    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    leftEye.position.set(-0.3, 0.4, 0.6); // Adjust position relative to the obstacle
-
-    // Right eye
-    const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    rightEye.position.set(0.3, 0.4, 0.6); // Adjust position relative to the obstacle
-
-    // Create Mouth
-    const mouthGeometry = new THREE.SphereGeometry(0.2, 16, 16);
-    const mouthMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
-    mouth.position.set(0, -0.4, 0.6);
-
-    // Add eyes and mouth to the obstacle
-    obstacle.add(leftEye);
-    obstacle.add(rightEye);
-    obstacle.add(mouth);
-
-    scene.add(obstacle);
-    obstacles.push(obstacle);
-}
-
+ function createGhostObstacle() {
+    if (selectedCourse === 'standard') return;
+     if (!canSpawnGhosts) return; // Prevent spawning if not allowed
+ 
+     const geometry = new THREE.SphereGeometry(obstacleSize / 1.5, 32, 32);
+     const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+     const obstacle = new THREE.Mesh(geometry, material);
+ 
+     let spawnPosition;
+     const minDistance = 10; // Minimum distance from the player
+     do {
+         spawnPosition = {
+             x: Math.random() * pathWidth - pathWidth / 2,
+             z: -Math.random() * pathLength
+         };
+     } while (Math.abs(spawnPosition.z) < minDistance); // Ensure the obstacle spawns at least minDistance away from the player
+ 
+     obstacle.position.set(spawnPosition.x, obstacleSize / 1, spawnPosition.z);
+     
+     // Create eyes for the ghost
+     const eyeGeometry = new THREE.SphereGeometry(0.2, 16, 16); // Larger spheres for eyes
+     const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }); // Dark black color for eyes
+ 
+     // Left eye
+     const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+     leftEye.position.set(-0.3, 0.4, 0.6); // Adjust position relative to the obstacle
+ 
+     // Right eye
+     const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+     rightEye.position.set(0.3, 0.4, 0.6); // Adjust position relative to the obstacle
+ 
+     // Create Mouth
+     const mouthGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+     const mouthMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+     const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
+     mouth.position.set(0, -0.4, 0.6);
+ 
+     // Add eyes and mouth to the obstacle
+     obstacle.add(leftEye);
+     obstacle.add(rightEye);
+     obstacle.add(mouth);
+ 
+     scene.add(obstacle);
+     obstacles.push(obstacle); // Add the obstacle to the global array
+ }
+ 
+ function removeAllGhostObstacles() {
+     canSpawnGhosts = false; // Prevent spawning new ghosts during removal
+ 
+     // Remove each obstacle from the scene
+     obstacles.forEach(obstacle => {
+         scene.remove(obstacle);
+         // Optionally, dispose of the geometry and material
+         obstacle.traverse(object => {
+             if (object.geometry) object.geometry.dispose();
+             if (object.material) object.material.dispose();
+         });
+     });
+     // Clear the array after removal
+     obstacles.length = 0;
+ 
+     // Optionally, reset flag to allow spawning ghosts again
+     canSpawnGhosts = true;
+ }
+ 
 
 
 
@@ -662,7 +758,6 @@ function showMenu() {
     document.getElementById('rulesScreen').style.display = 'none'; // Hide rules screen if visible
     document.getElementById('startScreen').style.display = 'block'; // Show the main menu
 }
-
 
 
 function endGame() {
