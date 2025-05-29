@@ -163,6 +163,55 @@
         #courseSelectionScreen button.selected {
             background-color: #FF4500;
         }
+        /* Add retro flicker to title */
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+            }
+            20%, 22%, 24%, 55% {
+                opacity: 0.4;
+            }
+        }
+
+        #startScreen h1 {
+            font-size: 40px;
+            color: #ff4c4c;
+            animation: flicker 1.5s infinite;
+            text-shadow: 0 0 5px red, 0 0 15px red;
+        }
+
+        /* Buttons */
+        #startScreen button, #gameOverScreen button, #rulesScreen button, #settingsScreen button {
+            font-size: 20px;
+            padding: 12px 24px;
+            margin: 10px;
+            cursor: pointer;
+            border: 2px solid #fff;
+            color: #000;
+            background-color: #ffcc00;
+            border-radius: 8px;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 8px #fff;
+        }
+
+        #startScreen button:hover, 
+        #gameOverScreen button:hover,
+        #rulesScreen button:hover, 
+        #settingsScreen button:hover {
+            background-color: #fff;
+            color: #ff0000;
+            transform: scale(1.05);
+            box-shadow: 0 0 12px #ff0000;
+        }
+
+        /* Retro-style border around start screen */
+        #startScreen, #rulesScreen, #settingsScreen, #courseSelectionScreen {
+            border: 4px double #fff;
+            box-shadow: 0 0 12px #00ffff, 0 0 24px #00ffff;
+        }
+
+        
+
 
         
         
@@ -201,11 +250,12 @@
     <audio id = "fallingSound" src ="fallingSound.mp3"></audio>
     <div id="startScreen">
         <h1>OBSTACLE ROLL</h1>
-        
-        <button id="startGame" onclick="showCourseSelection()">Start Game</button>
-        <button id="rulesButton" onclick="showRules()">Rules</button>
-        <button id="settingsButton" onclick="showSettings()">Game Settings</button>
+        <p style="margin-bottom: 20px;">Choose your path and survive the chaos!</p>
+        <button id="startGame" onclick="showCourseSelection()">▶ Start Game</button>
+        <button id="rulesButton" onclick="showRules()">📘 Rules</button>
+        <button id="settingsButton" onclick="showSettings()">⚙️ Game Settings</button>
     </div>
+
     <div id="rulesScreen">
         <h1>Game Rules</h1>
         <div id="controls">
