@@ -16,7 +16,7 @@ https://muharabi.github.io/Website-Project/
 
 - Infinite-runner style gameplay
 - Physics-based rolling mechanics
-- Left and right sliding controls (no jumping)
+- Left and right sliding controls
 - Procedurally generated obstacles
 - Sound effects and background audio
 - Playable directly in the browser
